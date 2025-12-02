@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorino - Projeto de Sistemas Digitais</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <div class="logo">Memorino</div>
+            <nav>
+                <ul>
+                    <li><a href="#sobre">Sobre</a></li>
+                    <li><a href="#montagem">Montagem</a></li>
+                    <li><a href="#codigo">Código</a></li>
+                    <li><a href="#autores">Autores</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="hero">
+        <div class="hero-content">
+            <h1>Memorino</h1>
+            <p>Projeto da Disciplina de Sistemas Digitais</p>
+            <a href="#sobre" class="btn">Conhecer o Projeto</a>
+        </div>
+    </section>
+
+    <div class="container">
+        
+        <section id="sobre">
+            <h2>Descrição do Projeto</h2>
+            
+            <div class="card">
+                <h3>Motivação, Objetivo e Contextualização</h3>
+                <p><strong>Motivação:</strong> A escolha de desenvolver um jogo de memória é motivada pela combinação da aprendizagem de eletrônica/programação com os benefícios cognitivos, como estímulo à atenção e memória de curto prazo.</p>
+                <p><strong>Objetivo:</strong> Desenvolver um protótipo funcional usando Arduino UNO, botões e display LCD I2C que exiba fases e pontuação, aumentando a dificuldade da sequência a cada nível.</p>
+                <p><strong>Contextualização:</strong> Aplicável em ambientes educacionais e feiras de ciências, demonstrando conceitos de interfaces físicas, timers e aleatoriedade controlada.</p>
+            </div>
+
+            <div class="card">
+                <h3>Esquema Conceitual</h3>
+                <div class="schema-container">
+                    <img src="img/esquema_conceitual.png" alt="Esquema de ligação do Arduino com LCD, Botões e LEDs" class="schema-img">
+                    <p class="caption">Figura 1: Diagrama de conexões do Memorino 4.</p>
+                </div>
+            </div>
+
+            <div class="keywords">
+                <span>Palavras-chave:</span>
+                <span class="tag">Jogo da Memória</span>
+                <span class="tag">Arduino UNO</span>
+                <span class="tag">Interface LCD I2C</span>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="componentes">
+            <h2>Componentes e Suprimentos</h2>
+            <ul class="component-list">
+                <li><strong>Arduino UNO R3:</strong> Placa microcontroladora principal.</li>
+                <li><strong>Display LCD 16x2 com I²C:</strong> Exibição de dados usando interface PCF8574 para reduzir fios.</li>
+                <li><strong>Botões táteis (3x):</strong> Entrada de dados do usuário.</li>
+                <li><strong>LEDs (4x):</strong> Indicadores visuais da sequência.</li>
+                <li><strong>Resistores 220Ω (3x):</strong> Proteção para os LEDs.</li>
+                <li><strong>Buzzer Piezo Passivo:</strong> Feedback sonoro (notas musicais).</li>
+                <li><strong>Protoboard e Jumpers:</strong> Para conexões e montagem sem solda.</li>
+            </ul>
+        </section>
+
+        <section id="ferramentas">
+            <h2>Aplicativos e Plataforma</h2>
+            <p>Foram utilizados no desenvolvimento:</p>
+            <ul>
+                <li>Arduino IDE (v2.3.6)</li>
+                <li>Bibliotecas: <code>LiquidCrystal_I2C</code> e <code>Wire</code></li>
+                <li>Git e GitHub para versionamento</li>
+            </ul>
+        </section>
+
+        <section id="montagem">
+            <h2>Passo a passo da Montagem</h2>
+            
+            <div class="step">
+                <h4>Passo 1: Conectar o LCD I2C</h4>
+                <p>Conecte VCC ao 5V, GND ao GND, SDA ao pino A4 e SCL ao pino A5 do Arduino UNO.</p>
+            </div>
+
+            <div class="step">
+                <h4>Passo 2: Botões e LEDs</h4>
+                <p>Posicione 3 botões na breadboard. Conecte cada um ao GND e a um pino digital (D5, D6, D7). Conecte os LEDs nos mesmos pinos (Anodo no pino via resistor, Cátodo no GND).</p>
+                <p class="alert">ATENÇÃO: O Botão 1 compartilha conexão com o LED 1, e assim por diante.</p>
+            </div>
+
+            <div class="step">
+                <h4>Passo 3: Conectar o Buzzer</h4>
+                <p>Conecte o terminal positivo do buzzer ao pino 8 e o negativo ao GND.</p>
+            </div>
+
+            <div class="step">
+                <h4>Passo 4, 5 e 6: Testes Finais</h4>
+                <p>Verifique curtos, conecte o USB, faça o upload do código via Arduino IDE e teste as sequências ajustando o <em>delay</em> se necessário.</p>
+            </div>
+        </section>
+
+        <section id="codigo">
+            <h2>Código Fonte</h2>
+            <p>O código foi desenvolvido em C++ utilizando a IDE do Arduino. Abaixo, destacamos as partes mais importantes da lógica do jogo.</p>
+
+            <div class="code-block">
+                <h3>1. Configuração e Variáveis</h3>
+                <p>Neste trecho, importamos a biblioteca do LCD via I2C e definimos os pinos dos LEDs e Botões utilizando <em>arrays</em> (vetores), o que facilita a manipulação dentro dos loops.</p>
+                <pre><code class="language-cpp">
+#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+
+// Configuração do Display e Pinos
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+const int leds[] = {2, 3, 4};
+const int botoes[] = {5, 6, 7};
+const int buzzer = 8;
+
+// Variáveis de Estado
+const int MAX_FASES = 10;
+int sequencia[MAX_FASES];
+int tamanhoSequencia = 0;
+                </code></pre>
+            </div>
+
+            <div class="code-block">
+                <h3>2. Lógica de Verificação (Core do Jogo)</h3>
+                <p>A função <code>verificarJogada</code> é o coração do Memorino. Ela compara o botão pressionado pelo jogador com a sequência armazenada. Se o jogador acertar toda a sequência da fase atual, o jogo avança; caso contrário, o jogo reinicia.</p>
+                <pre><code class="language-cpp">
+void verificarJogada(int botaoPressionado) {
+  // Verifica se o botão pressionado corresponde à sequência correta
+  if (botaoPressionado == sequencia[indiceJogador]) {
+    tone(buzzer, 1000, 200);
+    indiceJogador++;
+
+    // Se completou a sequência da fase
+    if (indiceJogador == tamanhoSequencia) {
+      // Verifica vitória (Fase 10) ou avança fase
+      if (tamanhoSequencia == MAX_FASES) {
+        lcd.print("VOCE VENCEU!");
+        iniciarJogo();
+      } else {
+        tamanhoSequencia++;
+        sequencia[tamanhoSequencia - 1] = random(0, 3);
+        jogando = false; // Prepara para mostrar nova sequência
+      }
+    }
+  } else {
+    // Game Over em caso de erro
+    tone(buzzer, 200, 1000);
+    lcd.print("Voce perdeu!");
+    iniciarJogo();
+  }
+}
+                </code></pre>
+            </div>
+
+            <p>Para acessar o código completo, incluindo as funções de setup e exibição de luzes, acesse nosso repositório:</p>
+            <a href="https://github.com/lfbc-cpu/Projeto-Memorino/blob/main/C%C3%B3digo" target="_blank" class="btn-outline">Ver Código no GitHub</a>
+            
+            <p style="margin-top: 15px;">Para a simulação, acesse:</p>
+            <a href="https://www.tinkercad.com/things/cO26soxu0yL/editel?returnTo=%2Fdashboard%2Fdesigns%2Fcircuits&sharecode=pvRlrrKF0kapKfOAlOqEy9bM7smgCqxNrsf1DaUI-_c" class="btn-outline">Ver no Tinkercad</a>
+        </section>
+
+        <section id="download">
+            <h2>Download do Projeto</h2>
+            <p>Baixe o pacote completo com esquemas, código `.ino` e documentação.</p>
+            <a href="memorino_completo.zip" download class="btn">Baixar Arquivo .ZIP</a>
+        </section>
+
+        <section id="video">
+            <h2>Vídeo Demonstrativo</h2>
+            <div class="video-container">
+               <iframe width="560" height="315" src="https://www.youtube.com/embed/d43WXrU5IIE?si=9srO1fQnt_fK5oXq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <section id="licoes">
+            <h2>Problemas e Lições Aprendidas</h2>
+            
+            <div class="card">
+                <h3>Desafios Enfrentados</h3>
+                <ul style="list-style-position: inside; margin-bottom: 15px;">
+                    <li><strong>Configuração do LCD I2C:</strong> Inicialmente, o display ligava mas não mostrava os caracteres. O problema foi resolvido ajustando o potenciômetro de contraste (na parte de trás do módulo) e confirmando o endereço hexadecimal <code>0x27</code> no código.</li>
+                    <li><strong>Leitura dos Botões (Bounce):</strong> O Arduino lia múltiplos toques quando apertávamos o botão apenas uma vez. Resolvemos isso implementando um pequeno <em>delay</em> no código para estabilizar o sinal (técnica de <em>Debounce</em>).</li>
+                    <li><strong>Mal contato na Protoboard:</strong> Durante a montagem, alguns LEDs falharam. A solução foi revisar todas as conexões e padronizar os jumpers (fios), garantindo que o circuito estivesse firme.</li>
+                </ul>
+                
+                <h3>Lições Aprendidas</h3>
+                <ul style="list-style-position: inside;">
+                    <li><strong>Integração Hardware-Software:</strong> Aprendemos como a lógica de programação controla componentes físicos e a importância da temporização correta.</li>
+                    <li><strong>Protocolo I2C:</strong> Compreendemos como esse protocolo facilita o projeto, economizando portas do Arduino ao usar apenas dois pinos para o display.</li>
+                    <li><strong>Trabalho em Equipe e GitHub:</strong> A experiência reforçou a importância de documentar o processo e usar controle de versão para gerenciar as alterações no código.</li>
+                </ul>
+            </div>
+        </section>
+
+        <hr>
+
+        <section id="autores">
+            <h2>Autores</h2>
+            <div class="authors-grid">
+                <div class="author-card">
+                    <img src="img/miguel.jpg" alt="Miguel Pereira">
+                    <h4>Miguel Pereira</h4>
+                    <div class="links">
+                        <a href="https://github.com/Miguel123448" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/miguel-pereira-de-lemos-40aa781b5/" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="author-card">
+                    <img src="img/lucas_aprigio.jpg" alt="Lucas Aprígio">
+                    <h4>Lucas Aprígio</h4>
+                    <div class="links">
+                        <a href="https://github.com/luc-ap" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/lucaprigio" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="author-card">
+                    <img src="img/lucas_felipe.jpg" alt="Lucas Felipe">
+                    <h4>Lucas Felipe</h4>
+                    <div class="links">
+                        <a href="https://github.com/lfbc-cpu" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/lucas-cavalcante-b11a10218" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="author-card">
+                    <img src="img/mateus.jpg" alt="Mateus Valerino">
+                    <h4>Mateus Valerino</h4>
+                    <div class="links">
+                        <a href="https://github.com/mvbs2-lang" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/mateus-valerino-90240b345/" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="author-card">
+                    <img src="img/joao.jpg" alt="João Ricardo">
+                    <h4>João Ricardo</h4>
+                    <div class="links">
+                        <a href="https://github.com/JhonnyRd06" target="_blank">GitHub</a>
+                        <a href="https://www.linkedin.com/in/jo%C3%A3o-ricardo-170097327" target="_blank">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Memorino - Projeto de Introdução à Computação.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
